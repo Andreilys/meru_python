@@ -1,0 +1,2 @@
+train_id:YOUR_TRAIN_ID
+class_name:YOUR_CLASS_NAME
