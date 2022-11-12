@@ -6,17 +6,17 @@ You can read Meru docs here - https://usemeru.com/docs
 
 *Sample output*
 **Prompt: a sks person jedi with short hair standing still looking at the sunset concept art by Doug Chiang cinematic, realistic painting, high definition, concept art, portait image, path tracing, serene landscape, high quality, highly detailed, 8K, soft colors, warm colors, turbulent sea, high coherence, anatomically correct, hyperrealistic, concept art, defined face, five fingers, symmetrical**
-[](jedi_andrei.jpeg)
+![](jedi_andrei.jpeg)
 
 
 # Instructions:
-0) git clone this repo
+0) git clone this repo `git clone https://github.com/Andreilys/meru_python`
 1) Make sure you have at least 3 credits from https://usemeru.com/credits
 2) Set meru_api_key environment variable to your api key or enter it when initializing MeruApp()
 	1) For example export meru_api_key=YOUR_API_KEY in command line
 	2) or os.environ['meru_api_key']=YOUR_API_KEY in Python
 4) Upload 5-20 images of your subject in the /input/ folder 
-5) Run *ipython -i meru_app.py*
+5) Run *ipython -i meru_app.py* in your command line
 	1) This starts ipython with the MeruApp class 
 6) Initialize the class (m = MeruApp())
 	1) When picking a class, choose a name like person, dog, cat that generalizes for what you're training on
