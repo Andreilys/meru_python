@@ -6,7 +6,7 @@ You can read Meru docs here - https://usemeru.com/docs
 
 *Sample output*
 **Prompt: a sks person jedi with short hair standing still looking at the sunset concept art by Doug Chiang cinematic, realistic painting, high definition, concept art, portait image, path tracing, serene landscape, high quality, highly detailed, 8K, soft colors, warm colors, turbulent sea, high coherence, anatomically correct, hyperrealistic, concept art, defined face, five fingers, symmetrical**
-![](jedi_andrei.jpeg)
+![](jedi_andrei.jpg)
 
 
 # Instructions:
