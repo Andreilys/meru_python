@@ -1,14 +1,11 @@
-import requests
-import os
+import requests, os, shutil, time, imghdr, urllib
 from os import listdir, environ
 from os.path import isfile, join
-import time
 from PIL import Image
-import imghdr
-import urllib
+
 
 class MeruApp():
-    def __init__(self, input_img_file_path='input', output_img_file_path='output', load_model=False):
+    def __init__(self, input_img_file_path='input', output_img_file_path='output', load_model=False, ):
         '''
         Class object takes in input/output img file paths.
         Make sure you have at least 3 credits here: https://usemeru.com/credits.
@@ -113,13 +110,13 @@ class MeruApp():
         for im in images:
             new_im.paste(im, (x_offset,0))
             x_offset += im.size[0]
-        save_file = f'{self.OUTPUT_IMAGE_FILE_PATH}/combined_img_output/combined_img_output.jpg'
+        save_file = f'{self.OUTPUT_IMAGE_FILE_PATH}/combined_img_output.jpg'
         new_im.save(save_file)
         im = Image.open(save_file)
         im.show()
 
 
-    def get_images(self, prompt, num_samples=1, seed=42, guidance_scale=10, callback_url=None):
+    def get_images(self, prompt, num_samples=1, seed=42, guidance_scale=7.5, callback_url=None, neg_prompt=None, ddim_steps=50):
         '''
             the get_images() function takes in a prompt, seed, guidance scale and a number of samples, saving the images to your OUTPUT_IMAGE_FILE_PATH.
             This will over-write previous images so make sure you move them if you want to save them!
@@ -133,9 +130,13 @@ class MeruApp():
             'num_samples' : num_samples,
             'seed' : str(seed),
             'guidance_scale' : int(guidance_scale),
-            'callback': callback_url
+            'callback': callback_url,
+            'negative_prompt': neg_prompt,
+            'ddim_steps': ddim_steps
         }
         response = requests.post('https://api.usemeru.com/inference/infer', headers=self.HEADERS, files=files)
+        print(response)
+        print(response.json())
         infer_id = response.json()['infer_id']
         files = {
             'infer_id': infer_id,
@@ -160,17 +161,29 @@ class MeruApp():
                 handler.write(img_data) 
         print(f'Images saved to: {self.OUTPUT_IMAGE_FILE_PATH}. Make sure you move them before running prompt() again or theyll be overwritten.')
 
+    def delete_old_images(self):
+        '''Deletes old images in the OUTPUT directory'''
+        for filename in os.listdir(self.OUTPUT_IMAGE_FILE_PATH):
+            file_path = os.path.join(self.OUTPUT_IMAGE_FILE_PATH, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-    def prompt(self, prompt, num_samples=1, seed=42, guidance_scale=10, callback_url=None):
+    def prompt(self, prompt, num_samples=1, seed=42, guidance_scale=7.5, callback_url=None, neg_prompt=None, ddim_steps=50):
         '''
             the prompt() function takes in a prompt, seed, guidance scale and a number of samples, saving the images to your OUTPUT_IMAGE_FILE_PATH.
             This will over-write previous images so make sure you move them if you want to save them!
         '''
-        self.get_images(prompt, num_samples, seed, guidance_scale, callback_url)
+        self.delete_old_images()
+        self.get_images(prompt, num_samples, seed, guidance_scale, callback_url, neg_prompt, ddim_steps)
         self.open_images()
 
 
-    def prompt_file(self, file_path='prompts.txt', num_samples=1, seed=42, guidance_scale=10, callback_url=None):
+    def prompt_file(self, file_path='prompts.txt', num_samples=1, seed=42, guidance_scale=10, callback_url=None, neg_prompt=None):
         '''
             the prompt_file() function takes in a prompt file path, seed, guidance scale and a number of samples, saving the images to your OUTPUT_IMAGE_FILE_PATH.
             This will over-write previous images so make sure you move them if you want to save them!
@@ -178,7 +191,7 @@ class MeruApp():
         with open(file_path) as file:
             lines = [line.rstrip() for line in file]
         for prompt in lines:
-            self.prompt(prompt, num_samples, seed, guidance_scale, callback_url)
+            self.prompt(prompt, num_samples, seed, guidance_scale, callback_url, neg_prompt=neg_prompt)
             print('----------------------------------------------------------------')
             print('----------------------------------------------------------------')
 
@@ -189,7 +202,7 @@ class MeruApp():
         '''
         response = requests.post('https://api.usemeru.com/train/status', headers=self.HEADERS, files=self.TRAIN_ID_FILES) 
         url = response.json()['model_uri']
-        urllib.request.urlretrieve(url, filename=f"{output_dir}/{CLASS}_img_model.ckpt")
+        urllib.request.urlretrieve(url, filename=f"{output_dir}/{self.CLASS}_img_model.ckpt")
 
 
     def delete_model(self):
@@ -199,5 +212,3 @@ class MeruApp():
         print(f'Deleting model with train_id: {self.TRAIN_ID}')
         response = requests.post('https://api.usemeru.com/train/delete', headers=self.HEADERS, files=self.TRAIN_ID_FILES)
         return response.json()
-
-
